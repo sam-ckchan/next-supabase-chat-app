@@ -1,0 +1,13 @@
+# Default ignored files
+/shelf/
+/.idea
+/.vscode
+# Editor-based HTTP Client requests
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+# Zencoder local files
+/zencoder
+/zencoder-chat-index.xml
+/zencoder-chats-dedicated.xml
