@@ -173,6 +173,23 @@ As a workspace Admin, I can add a new member by their email address so that my t
 
 -   **FR-022**: System MUST show clear error states when access is denied.
 -   **FR-023**: System MUST roll back optimistic UI updates when operations fail.
+-   **FR-035**: System MUST display generic "Access denied" message for RLS violations (no specific reason to prevent information leakage).
+-   **FR-036**: System MUST provide navigation option to return to workspace selector after access denial.
+-   **FR-037**: System MUST NOT reveal whether a resource exists when access is denied (same error for "not found" and "not authorized").
+
+**Real-Time Behavior**
+
+-   **FR-024**: System MUST deliver new messages to viewing users instantly (append to bottom of message list).
+-   **FR-025**: System MUST allow brief out-of-order display if messages arrive with network timing variance; timestamp display ensures user comprehension.
+-   **FR-026**: System MUST NOT block message display waiting for perfect chronological ordering.
+-   **FR-027**: System MUST deduplicate real-time events by message ID; if a message with the same ID already exists in the view, the duplicate event is ignored.
+-   **FR-028**: System MUST treat message updates (edits) as separate events; dedupe applies only to INSERT events with identical IDs.
+-   **FR-029**: System MUST refetch the current page of messages from the server when the real-time connection reconnects.
+-   **FR-030**: System MUST replace local message state entirely on reconnect refetch (no merge with stale local data).
+-   **FR-031**: System MUST resubscribe to real-time channel events after reconnect refetch completes.
+-   **FR-032**: System MUST unsubscribe from all previous workspace's real-time channels before subscribing to new workspace channels on workspace switch.
+-   **FR-033**: System MUST NOT process real-time events from a previous workspace after switch begins (teardown-first ordering).
+-   **FR-034**: System MUST clear all channel and message UI state from previous workspace before displaying new workspace data.
 
 ### Key Entities
 
@@ -202,3 +219,13 @@ As a workspace Admin, I can add a new member by their email address so that my t
 -   Message editing updates the `updated_at` timestamp but does not maintain edit history.
 -   "Adding member by email" means the email must correspond to an existing user account in Supabase Auth. Inviting non-registered users is out of scope.
 -   Admins cannot currently demote themselves or be removed; workspace ownership transfer is out of scope.
+
+## Clarifications
+
+### Session 2026-01-06
+
+-   Q: When User A sends a message and User B is viewing the same channel, how should User B's UI update? → A: Messages appear instantly at the bottom of the list as they arrive (may briefly show out-of-order if network varies).
+-   Q: If a real-time event delivers the same message twice, how should the system handle it? → A: Deduplicate by message ID; if ID already exists, ignore the duplicate event.
+-   Q: When a user's real-time connection drops and reconnects, how should the system synchronize state? → A: Refetch the current page of messages from the server on reconnect; replace local state entirely.
+-   Q: When a user switches from Workspace A to Workspace B, what should happen to active real-time subscriptions? → A: Immediately unsubscribe from all Workspace A channels before subscribing to Workspace B channels.
+-   Q: When a user's action is blocked by RLS, what should the UI display? → A: Show generic denial "Access denied" with option to return to workspace selector (no specific reason to avoid information leakage).
