@@ -1,30 +1,39 @@
 -- Seed data for development/testing
--- Run with: supabase db seed
+-- Run with: supabase db reset
 
--- Note: You need to create test users in Supabase Auth first
--- This seed assumes user IDs are available
+-- Create test users in auth.users (Supabase local dev allows this)
+INSERT INTO auth.users (id, email, encrypted_password, email_confirmed_at, created_at, updated_at, instance_id, aud, role)
+VALUES 
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'alice@test.com', crypt('password123', gen_salt('bf')), now(), now(), now(), '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated'),
+  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'bob@test.com', crypt('password123', gen_salt('bf')), now(), now(), now(), '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated')
+ON CONFLICT (id) DO NOTHING;
 
--- Insert test workspaces (replace UUIDs with actual user IDs from auth.users)
--- INSERT INTO workspaces (id, name, created_by) VALUES
---   ('11111111-1111-1111-1111-111111111111', 'Acme Corp', '<user-a-id>'),
---   ('22222222-2222-2222-2222-222222222222', 'Startup Inc', '<user-b-id>');
+-- Insert test workspaces
+INSERT INTO workspaces (id, name, created_by) VALUES
+  ('11111111-1111-1111-1111-111111111111', 'Acme Corp', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  ('22222222-2222-2222-2222-222222222222', 'Startup Inc', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb')
+ON CONFLICT (id) DO NOTHING;
 
 -- Insert workspace members
--- INSERT INTO workspace_members (workspace_id, user_id, role) VALUES
---   ('11111111-1111-1111-1111-111111111111', '<user-a-id>', 'admin'),
---   ('11111111-1111-1111-1111-111111111111', '<user-b-id>', 'member'),
---   ('22222222-2222-2222-2222-222222222222', '<user-b-id>', 'admin');
+INSERT INTO workspace_members (workspace_id, user_id, role) VALUES
+  ('11111111-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'admin'),
+  ('11111111-1111-1111-1111-111111111111', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'member'),
+  ('22222222-2222-2222-2222-222222222222', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'admin')
+ON CONFLICT (workspace_id, user_id) DO NOTHING;
 
 -- Insert test channels
--- INSERT INTO channels (id, workspace_id, name, created_by) VALUES
---   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '11111111-1111-1111-1111-111111111111', 'general', '<user-a-id>'),
---   ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', '11111111-1111-1111-1111-111111111111', 'random', '<user-a-id>'),
---   ('cccccccc-cccc-cccc-cccc-cccccccccccc', '22222222-2222-2222-2222-222222222222', 'general', '<user-b-id>');
+INSERT INTO channels (id, workspace_id, name, created_by) VALUES
+  ('aaaaaaaa-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 'general', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  ('bbbbbbbb-1111-1111-1111-111111111111', '11111111-1111-1111-1111-111111111111', 'random', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'),
+  ('cccccccc-2222-2222-2222-222222222222', '22222222-2222-2222-2222-222222222222', 'general', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb')
+ON CONFLICT (id) DO NOTHING;
 
 -- Insert sample messages
--- INSERT INTO messages (channel_id, user_id, body) VALUES
---   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '<user-a-id>', 'Hello everyone!'),
---   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '<user-b-id>', 'Hi there!'),
---   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '<user-a-id>', 'Welcome to the channel.');
+INSERT INTO messages (channel_id, user_id, body, created_at) VALUES
+  ('aaaaaaaa-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Hello everyone! Welcome to Acme Corp.', now() - interval '2 hours'),
+  ('aaaaaaaa-1111-1111-1111-111111111111', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Hi there! Glad to be here.', now() - interval '1 hour 55 minutes'),
+  ('aaaaaaaa-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Feel free to ask any questions!', now() - interval '1 hour 50 minutes'),
+  ('bbbbbbbb-1111-1111-1111-111111111111', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Random thoughts go here 🎲', now() - interval '30 minutes'),
+  ('cccccccc-2222-2222-2222-222222222222', 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Welcome to Startup Inc!', now() - interval '1 hour');
 
-SELECT 'Seed file ready - uncomment and replace UUIDs to seed data' AS message;
+SELECT 'Seed completed! Test users: alice@test.com / bob@test.com (password: password123)' AS message;

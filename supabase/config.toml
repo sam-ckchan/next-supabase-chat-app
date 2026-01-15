@@ -1,6 +1,5 @@
-[project]
-id = "your-project-id"
-name = "smash"
+# A string used to distinguish different Supabase projects on the same host
+project_id = "smash"
 
 [api]
 enabled = true
