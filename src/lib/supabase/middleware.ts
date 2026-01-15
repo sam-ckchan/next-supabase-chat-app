@@ -44,8 +44,10 @@ export async function updateSession(request: NextRequest) {
   // Protected routes check
   const isAuthPage =
     request.nextUrl.pathname.startsWith("/login") || request.nextUrl.pathname.startsWith("/signup");
-  const isProtectedRoute =
-    request.nextUrl.pathname.startsWith("/workspace") || request.nextUrl.pathname.startsWith("/w/");
+  
+  // Protect workspace/channel routes - UUID pattern
+  const uuidPattern = /^\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+  const isProtectedRoute = uuidPattern.test(request.nextUrl.pathname);
 
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
