@@ -31,7 +31,7 @@ export default async function ChannelPage({ params }: ChannelPageProps) {
     .single();
 
   if (membershipError || !membership) {
-    redirect("/workspaces?error=access-denied");
+    redirect("/login?error=access-denied");
   }
 
   // Get channel info

@@ -2,10 +2,101 @@
 -- Run with: supabase db reset
 
 -- Create test users in auth.users (Supabase local dev allows this)
-INSERT INTO auth.users (id, email, encrypted_password, email_confirmed_at, created_at, updated_at, instance_id, aud, role)
+INSERT INTO auth.users (
+  id, 
+  instance_id,
+  email, 
+  encrypted_password, 
+  email_confirmed_at,
+  confirmation_token,
+  recovery_token,
+  email_change_token_current,
+  email_change_token_new,
+  email_change,
+  phone_change,
+  phone_change_token,
+  aud,
+  role,
+  created_at, 
+  updated_at,
+  confirmation_sent_at,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  is_super_admin,
+  phone
+)
 VALUES 
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'alice@test.com', crypt('password123', gen_salt('bf')), now(), now(), now(), '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated'),
-  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'bob@test.com', crypt('password123', gen_salt('bf')), now(), now(), now(), '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated')
+  (
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    '00000000-0000-0000-0000-000000000000',
+    'alice@test.com',
+    crypt('password123', gen_salt('bf')),
+    now(),
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'authenticated',
+    'authenticated',
+    now(),
+    now(),
+    now(),
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{}'::jsonb,
+    false,
+    NULL
+  ),
+  (
+    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    '00000000-0000-0000-0000-000000000000',
+    'bob@test.com',
+    crypt('password123', gen_salt('bf')),
+    now(),
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    'authenticated',
+    'authenticated',
+    now(),
+    now(),
+    now(),
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    '{}'::jsonb,
+    false,
+    NULL
+  )
+ON CONFLICT (id) DO NOTHING;
+
+-- Create identities for the users
+INSERT INTO auth.identities (id, user_id, provider_id, provider, identity_data, last_sign_in_at, created_at, updated_at)
+VALUES
+  (
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+    'email',
+    '{"sub":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","email":"alice@test.com"}'::jsonb,
+    now(),
+    now(),
+    now()
+  ),
+  (
+    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+    'email',
+    '{"sub":"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb","email":"bob@test.com"}'::jsonb,
+    now(),
+    now(),
+    now()
+  )
 ON CONFLICT (id) DO NOTHING;
 
 -- Insert test workspaces

@@ -47,16 +47,28 @@ CREATE POLICY "Admins can delete workspaces"
     )
   );
 
--- Workspace Members: Members can see other members in their workspaces
-CREATE POLICY "Members can read workspace members"
+-- Workspace Members: Users can read their own memberships
+-- This avoids infinite recursion by not referencing workspace_members in subquery
+CREATE POLICY "Users can read own workspace memberships"
   ON workspace_members FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM workspace_members AS wm
-      WHERE wm.workspace_id = workspace_members.workspace_id
-        AND wm.user_id = auth.uid()
-    )
+  USING (user_id = auth.uid());
+
+-- Workspace Members: Security definer function to check membership without recursion
+CREATE OR REPLACE FUNCTION is_workspace_member(workspace_uuid UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM workspace_members
+    WHERE workspace_id = workspace_uuid
+      AND user_id = auth.uid()
   );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Workspace Members: Members can see other members in their workspaces
+CREATE POLICY "Members can read other workspace members"
+  ON workspace_members FOR SELECT
+  USING (is_workspace_member(workspace_id));
 
 -- Workspace Members: Admins can add members
 CREATE POLICY "Admins can add workspace members"
