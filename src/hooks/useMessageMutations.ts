@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { sendMessage, editMessage, deleteMessage } from "@/services/messages";
+import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/types/database";
 import type { OptimisticMessage } from "@/lib/schemas/message";
 
@@ -28,6 +29,13 @@ export function useSendMessage(channelId: string | null) {
     onMutate: async ({ body }) => {
       if (!channelId) return;
 
+      // Get current user for optimistic message
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
       // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["messages", channelId] });
 
@@ -50,7 +58,7 @@ export function useSendMessage(channelId: string | null) {
         const optimisticMessage: OptimisticMessage = {
           id: optimisticId,
           channel_id: channelId,
-          user_id: "", // Will be set by server
+          user_id: user.id,
           body,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -79,8 +87,46 @@ export function useSendMessage(channelId: string | null) {
         queryClient.setQueryData(["messages", channelId], context.previousData);
       }
     },
-    onSettled: () => {
-      // Realtime handles the final state via dedupe
+    onSuccess: (newMessage, _vars, context) => {
+      if (!channelId || !context?.optimisticId) return;
+
+      // Replace optimistic message with real one by optimisticId
+      queryClient.setQueryData<{
+        pages: { messages: OptimisticMessage[]; nextCursor: string | null }[];
+        pageParams: (string | undefined)[];
+      }>(["messages", channelId], (oldData) => {
+        if (!oldData) return oldData;
+
+        // Check if optimistic message still exists
+        const hasOptimistic = oldData.pages.some((page) =>
+          page.messages.some((m) => m.id === context.optimisticId)
+        );
+
+        if (!hasOptimistic) {
+          // Already replaced by realtime, check if real message exists
+          const hasReal = oldData.pages.some((page) =>
+            page.messages.some((m) => m.id === newMessage.id)
+          );
+          if (hasReal) return oldData; // Already handled
+
+          // Realtime beat us but with different message, add it
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page, idx) =>
+              idx === 0 ? { ...page, messages: [newMessage, ...page.messages] } : page
+            ),
+          };
+        }
+
+        // Replace optimistic with real message
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page) => ({
+            ...page,
+            messages: page.messages.map((m) => (m.id === context.optimisticId ? newMessage : m)),
+          })),
+        };
+      });
     },
   });
 }
