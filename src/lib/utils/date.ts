@@ -8,7 +8,7 @@ export function formatDistanceToNow(date: Date): string {
 
   const diffInMinutes = Math.floor(diffInSeconds / 60);
   if (diffInMinutes < 60) {
-    return `${diffInMinutes} min ago`;
+    return `${diffInMinutes} min${diffInMinutes > 1 ? "s" : ""} ago`;
   }
 
   const diffInHours = Math.floor(diffInMinutes / 60);

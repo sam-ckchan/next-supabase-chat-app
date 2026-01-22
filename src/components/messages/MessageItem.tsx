@@ -4,6 +4,7 @@ import { formatDistanceToNow } from "@/lib/utils/date";
 import type { OptimisticMessage } from "@/lib/schemas/message";
 import { MessageActions } from "./MessageActions";
 import { useState } from "react";
+import { TimeAgo } from "./TimeAgo";
 
 interface MessageItemProps {
   message: OptimisticMessage;
@@ -46,7 +47,7 @@ export function MessageItem({ message, isOwner, onEdit, onDelete }: MessageItemP
             User {message.user_id.slice(0, 8)}
           </span>
           <span className="text-xs text-gray-500">
-            {formatDistanceToNow(new Date(message.created_at))}
+            <TimeAgo date={new Date(message.created_at)} />
           </span>
           {isEdited && <span className="text-xs text-gray-400 italic">(edited)</span>}
           {message._optimistic && <span className="text-xs text-blue-500">sending...</span>}
