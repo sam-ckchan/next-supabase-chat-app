@@ -8,6 +8,7 @@
 /dataSources/
 /dataSources.local.xml
 # Zencoder local files
+/.zencoder
 /zencoder
 /zencoder-chat-index.xml
 /zencoder-chats-dedicated.xml

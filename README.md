@@ -1,9 +1,4 @@
----
-description: Repository Information Overview
-alwaysApply: true
----
-
-# Smash - Multi-Workspace Chat Application
+#  Multi-Workspace Chat Application
 
 ## Summary
 Slack-like multi-workspace chat application with channels, real-time messaging, threads, reactions, and presence. Built as a proof-of-concept deployed on Vercel with Supabase backend (Postgres + Auth + Realtime). Supports workspace and channel management, real-time message updates, threaded conversations, emoji reactions, and user presence tracking.
@@ -75,7 +70,7 @@ pnpm lint
 - Realtime enabled for live updates
 - Storage with 50MiB file size limit
 
-**Database Schema**: 
+**Database Schema**:
 - Migrations in `supabase/migrations/` covering workspaces, channels, messages, and RLS policies
 - Seed data in `supabase/seed.sql`
 
